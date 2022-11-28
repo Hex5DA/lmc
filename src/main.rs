@@ -16,14 +16,6 @@ fn main() {
         HALT,
     ];
 
-    // let prog = vec![
-    //     INP,
-    //     STA(99),
-    //     INP,
-    //     ADD(99),
-    //     OUT
-    // ];
-
     let mut lmc = LMC::new();
     
     println!("Loading the program into memory..");

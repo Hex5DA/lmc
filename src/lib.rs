@@ -10,7 +10,7 @@ pub enum LMCErrors {
     NoInstructionsGiven,
     #[error("Too many instructions given! Not enough memory.")]
     TooManyInstructionsGiven,
-    #[error("The program never halted")]
+    #[error("The program never halted. Note: This could also be triggered if the program jumped outside of the memory limits.")]
     ProgramDidntHalt,
     #[error("The program halted")]
     Halt,
@@ -21,7 +21,7 @@ pub enum LMCErrors {
     #[error("Tried to access memory out of bounds")]
     MemoryOutOfBounds,
     #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
-    InstructionCodeNotRecognised(i64, u64)
+    InstructionCodeNotRecognised(i64, u64),
 }
 
 #[derive(PartialEq, Eq)]
@@ -30,9 +30,9 @@ pub enum Instruction {
     SUB(DataType),
     STA(DataType),
     LDA(DataType),
-    // BRA(DataType),
-    // BRZ(DataType),
-    // BRP(DataType),
+    BRA(DataType),
+    BRZ(DataType),
+    BRP(DataType),
     INP,
     OUT,
     HALT,
@@ -45,9 +45,9 @@ impl Into<DataType> for Instruction {
             Instruction::SUB(addr) => 2 * 100 + addr,
             Instruction::STA(addr) => 3 * 100 + addr,
             Instruction::LDA(addr) => 5 * 100 + addr,
-            // Instruction::BRA(addr) => 6 * 100 + addr,
-            // Instruction::BRZ(addr) => 7 * 100 + addr,
-            // Instruction::BRP(addr) => 8 * 100 + addr,
+            Instruction::BRA(addr) => 6 * 100 + addr,
+            Instruction::BRZ(addr) => 7 * 100 + addr,
+            Instruction::BRP(addr) => 8 * 100 + addr,
             Instruction::INP => 9 * 100 + 1,
             Instruction::OUT => 9 * 100 + 2,
             Instruction::HALT => 000,
@@ -66,15 +66,21 @@ impl From<DataType> for Instruction {
             2 => Instruction::SUB(payload),
             3 => Instruction::STA(payload),
             5 => Instruction::LDA(payload),
-            // 6 => Instruction::BRA(payload),
-            // 7 => Instruction::BRZ(payload),
-            // 8 => Instruction::BRP(payload),
+            6 => Instruction::BRA(payload),
+            7 => Instruction::BRZ(payload),
+            8 => Instruction::BRP(payload),
             9 => match payload {
                 1 => Instruction::INP,
                 2 => Instruction::OUT,
-                _ => panic!("{}", LMCErrors::InstructionCodeNotRecognised(payload as i64, 2))
-            }
-            _ => panic!("{:?}", LMCErrors::InstructionCodeNotRecognised(instr as i64, 9))
+                _ => panic!(
+                    "{}",
+                    LMCErrors::InstructionCodeNotRecognised(payload as i64, 2)
+                ),
+            },
+            _ => panic!(
+                "{:?}",
+                LMCErrors::InstructionCodeNotRecognised(instr as i64, 9)
+            ),
         }
     }
 }
@@ -123,6 +129,18 @@ impl LMC {
                     .get_mut(addr as usize)
                     .ok_or(LMCErrors::MemoryOutOfBounds)?);
             }
+            BRA(addr) => self.pc = addr,
+            BRZ(addr) => {
+                if self.accumulator == 0 {
+                    self.pc = addr
+                }
+            }
+            BRP(_addr) => {
+                panic!("Negative numbers not yet implemented!");
+                // if self.accumulator > 0 {
+                //     self.pc = addr
+                // }
+            }
             INP => {
                 let mut buf = String::new();
                 print!("(PC @ {}) Input: ", self.pc);
@@ -155,11 +173,15 @@ impl LMC {
 
     pub fn run(&mut self) -> Result<(), LMCErrors> {
         loop {
-            let data = self.memory[self.pc as usize]; // Fetch
+            let data = *(self // Ive written this code so many times, its so gross but I cba to change it
+                .memory
+                .get(self.pc as usize)
+                .ok_or(LMCErrors::ProgramDidntHalt)?); // Fetch
             let instr: Instruction = data.into(); // Decode
             self.pc += 1;
 
-            match self.execute(instr) { // Execute
+            match self.execute(instr) {
+                // Execute
                 Ok(_) => {}
                 Err(LMCErrors::Halt) => return Ok(()),
                 Err(err) => return Err(err), // Could just do `err => return err` but I like this more
