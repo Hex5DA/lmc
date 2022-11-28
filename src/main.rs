@@ -9,13 +9,32 @@ fn main() {
         STA(99),
         INP,
         ADD(99),
+        STA(99),
+        INP,
+        SUB(99),
         OUT,
         HALT,
     ];
 
+    // let prog = vec![
+    //     INP,
+    //     STA(99),
+    //     INP,
+    //     ADD(99),
+    //     OUT
+    // ];
+
     let mut lmc = LMC::new();
-    if let Err(err) = lmc.run(prog) {
-        println!("An error occured: {}", err);
+    
+    println!("Loading the program into memory..");
+    if let Err(err) = lmc.load(prog) {
+        println!("An error occured whilst loading the program: {}", err);
+    }    
+
+    println!("Running..");
+    if let Err(err) = lmc.run() {
+        println!("An error occured whilst running the program: {}", err);
     }
-    println!("Programming finished.")
+
+    println!("Program finished.")
 }

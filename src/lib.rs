@@ -8,6 +8,8 @@ type DataType = u64;
 pub enum LMCErrors {
     #[error("No instructions were given to LMC")]
     NoInstructionsGiven,
+    #[error("Too many instructions given! Not enough memory.")]
+    TooManyInstructionsGiven,
     #[error("The program never halted")]
     ProgramDidntHalt,
     #[error("The program halted")]
@@ -18,15 +20,63 @@ pub enum LMCErrors {
     IOError(#[from] std::io::Error),
     #[error("Tried to access memory out of bounds")]
     MemoryOutOfBounds,
+    #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
+    InstructionCodeNotRecognised(i64, u64)
 }
 
 #[derive(PartialEq, Eq)]
 pub enum Instruction {
-    STA(DataType),
-    INP,
     ADD(DataType),
+    SUB(DataType),
+    STA(DataType),
+    LDA(DataType),
+    // BRA(DataType),
+    // BRZ(DataType),
+    // BRP(DataType),
+    INP,
     OUT,
     HALT,
+}
+
+impl Into<DataType> for Instruction {
+    fn into(self) -> DataType {
+        match self {
+            Instruction::ADD(addr) => 1 * 100 + addr,
+            Instruction::SUB(addr) => 2 * 100 + addr,
+            Instruction::STA(addr) => 3 * 100 + addr,
+            Instruction::LDA(addr) => 5 * 100 + addr,
+            // Instruction::BRA(addr) => 6 * 100 + addr,
+            // Instruction::BRZ(addr) => 7 * 100 + addr,
+            // Instruction::BRP(addr) => 8 * 100 + addr,
+            Instruction::INP => 9 * 100 + 1,
+            Instruction::OUT => 9 * 100 + 2,
+            Instruction::HALT => 000,
+        }
+    }
+}
+
+impl From<DataType> for Instruction {
+    fn from(code: DataType) -> Instruction {
+        let instr = ((code / 100) as f64).floor() as DataType;
+        let payload = code % 100;
+
+        match instr {
+            0 => Instruction::HALT,
+            1 => Instruction::ADD(payload),
+            2 => Instruction::SUB(payload),
+            3 => Instruction::STA(payload),
+            5 => Instruction::LDA(payload),
+            // 6 => Instruction::BRA(payload),
+            // 7 => Instruction::BRZ(payload),
+            // 8 => Instruction::BRP(payload),
+            9 => match payload {
+                1 => Instruction::INP,
+                2 => Instruction::OUT,
+                _ => panic!("{}", LMCErrors::InstructionCodeNotRecognised(payload as i64, 2))
+            }
+            _ => panic!("{:?}", LMCErrors::InstructionCodeNotRecognised(instr as i64, 9))
+        }
+    }
 }
 
 pub struct LMC {
@@ -54,17 +104,29 @@ impl LMC {
                     .memory
                     .get(addr as usize)
                     .ok_or(LMCErrors::MemoryOutOfBounds)? // made more complex because I want to use LMCError
-            },
+            }
+            SUB(addr) => {
+                self.accumulator -= self
+                    .memory
+                    .get(addr as usize)
+                    .ok_or(LMCErrors::MemoryOutOfBounds)? // made more complex because I want to use LMCError
+            }
             STA(addr) => {
                 *(self
                     .memory
                     .get_mut(addr as usize)
                     .ok_or(LMCErrors::MemoryOutOfBounds)?) = self.accumulator; // Is this good? No. Should I make a wrapper? Yes. Will I? Probably not
-            },
+            }
+            LDA(addr) => {
+                self.accumulator = *(self
+                    .memory
+                    .get_mut(addr as usize)
+                    .ok_or(LMCErrors::MemoryOutOfBounds)?);
+            }
             INP => {
                 let mut buf = String::new();
                 print!("(PC @ {}) Input: ", self.pc);
-                _ = stdout().flush();
+                _ = stdout().flush(); // Would be nice if there was an easier way to do this..
                 stdin().read_line(&mut buf)?;
                 let as_int: DataType = buf.trim().parse()?;
                 self.accumulator = as_int;
@@ -74,20 +136,36 @@ impl LMC {
         Ok(())
     }
 
-    pub fn run(&mut self, program: Vec<Instruction>) -> Result<(), LMCErrors> {
-        if program.len() <= 0 { // If program.len() is less than 0 I'm deeply concerned but may as well :)
+    pub fn load(&mut self, program: Vec<Instruction>) -> Result<(), LMCErrors> {
+        if program.len() <= 0 {
+            // If program.len() is less than 0 I'm deeply concerned but may as well :)
             return Err(LMCErrors::NoInstructionsGiven);
         }
 
-        for instr in program {
-            self.pc += 1;
-            match self.execute(instr) {
-                Ok(_) => {},
-                Err(LMCErrors::Halt) => return Ok(()),
-                Err(err) => return Err(err) // Could just do `err => return err` but I like this more
-            }
+        if program.len() > MEMORY_LIMIT {
+            return Err(LMCErrors::TooManyInstructionsGiven);
         }
 
-        Err(LMCErrors::ProgramDidntHalt)
+        for (idx, instr) in program.into_iter().enumerate() {
+            self.memory[idx] = instr.into();
+        }
+
+        Ok(())
+    }
+
+    pub fn run(&mut self) -> Result<(), LMCErrors> {
+        loop {
+            let data = self.memory[self.pc as usize]; // Fetch
+            let instr: Instruction = data.into(); // Decode
+            self.pc += 1;
+
+            match self.execute(instr) { // Execute
+                Ok(_) => {}
+                Err(LMCErrors::Halt) => return Ok(()),
+                Err(err) => return Err(err), // Could just do `err => return err` but I like this more
+            }
+        } // Cycle
+
+        // Err(LMCErrors::ProgramDidntHalt)
     }
 }
