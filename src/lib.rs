@@ -40,10 +40,10 @@ impl Into<DataType> for Instruction {
 
 impl From<DataType> for Instruction {
     fn from(code: DataType) -> Instruction {
-        let instr = ((code / 100) as f64).floor() as DataType;
+        let op = ((code / 100) as f64).floor() as DataType;
         let payload = code % 100;
 
-        match instr {
+        match op {
             0 => Instruction::HLT,
             1 => Instruction::ADD(payload as AddrType),
             2 => Instruction::SUB(payload as AddrType),
@@ -61,8 +61,8 @@ impl From<DataType> for Instruction {
                 ),
             },
             _ => panic!(
-                "{:?}",
-                LMCErrors::InstructionCodeNotRecognised(instr as i64, 9)
+                "{}",
+                LMCErrors::InstructionCodeNotRecognised(op as i64, 9)
             ),
         }
     }
