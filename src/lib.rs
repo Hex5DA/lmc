@@ -35,7 +35,7 @@ pub enum Instruction {
     BRP(DataType),
     INP,
     OUT,
-    HALT,
+    HLT,
 }
 
 impl Into<DataType> for Instruction {
@@ -50,7 +50,7 @@ impl Into<DataType> for Instruction {
             Instruction::BRP(addr) => 8 * 100 + addr,
             Instruction::INP => 9 * 100 + 1,
             Instruction::OUT => 9 * 100 + 2,
-            Instruction::HALT => 000,
+            Instruction::HLT => 000,
         }
     }
 }
@@ -61,7 +61,7 @@ impl From<DataType> for Instruction {
         let payload = code % 100;
 
         match instr {
-            0 => Instruction::HALT,
+            0 => Instruction::HLT,
             1 => Instruction::ADD(payload),
             2 => Instruction::SUB(payload),
             3 => Instruction::STA(payload),
@@ -104,7 +104,7 @@ impl LMC {
         use Instruction::*;
         match instr {
             OUT => println!("(PC @ {}) Output: {}", self.pc, self.accumulator),
-            HALT => return Err(LMCErrors::Halt),
+            HLT => return Err(LMCErrors::Halt),
             ADD(addr) => {
                 self.accumulator += self
                     .memory

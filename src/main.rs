@@ -6,14 +6,16 @@ fn main() {
     
     let prog = vec![
         INP,
-        STA(99),
+        STA(99), // 'count'
         INP,
-        ADD(99),
-        STA(99),
-        INP,
-        SUB(99),
+        STA(98), // 'step'
+        LDA(99),
+        BRZ(10),
+        SUB(98),
         OUT,
-        HALT,
+        STA(99),
+        BRA(5),
+        HLT,
     ];
 
     let mut lmc = LMC::new();
