@@ -185,7 +185,5 @@ impl LMC {
                 Err(err) => return Err(err), // Could just do `err => return err` but I like this more
             }
         } // Cycle
-
-        // Err(LMCErrors::ProgramDidntHalt)
     }
 }

@@ -1,21 +1,16 @@
-mod lib;
-use lib::*;
+use lmc::*;
 
 fn main() {
     use Instruction::*;
     
     let prog = vec![
         INP,
-        STA(99), // 'count'
-        INP,
-        STA(98), // 'step'
-        LDA(99),
-        BRZ(10),
-        SUB(98),
-        OUT,
         STA(99),
-        BRA(5),
-        HLT,
+        INP,
+        STA(98),
+        LDA(99),
+        ADD(98),
+        OUT
     ];
 
     let mut lmc = LMC::new();
