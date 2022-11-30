@@ -2,10 +2,16 @@ pub mod emulator;
 pub mod errors;
 
 use emulator::{LMC, Instruction};
+use sasm;
 
 fn main() {
     use Instruction::*;
     
+    println!("Loading sasm");
+    if let Err(err) = sasm::run("./test.sasm") {
+        println!("Error while running sasm {}", err);
+    }
+
     let prog = vec![
         INP,
         STA(99),
