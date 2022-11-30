@@ -1,4 +1,7 @@
-use lmc::*;
+pub mod emulator;
+pub mod errors;
+
+use emulator::{LMC, Instruction};
 
 fn main() {
     use Instruction::*;

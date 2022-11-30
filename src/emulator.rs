@@ -1,5 +1,4 @@
-pub mod errors;
-use errors::*;
+use crate::errors::*;
 
 use std::io::{stdin, stdout, Write};
 
@@ -140,7 +139,7 @@ impl LMC {
     }
 
     pub fn load(&mut self, program: Vec<Instruction>) -> Result<(), LMCErrors> {
-        if program.len() <= 0 {
+        if program.is_empty() {
             // If program.len() is less than 0 I'm deeply concerned but may as well :)
             return Err(LMCErrors::NoInstructionsGiven);
         }
