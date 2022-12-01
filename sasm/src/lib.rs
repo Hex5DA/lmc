@@ -8,6 +8,8 @@ mod lex;
 pub enum SasmErrors {
     #[error("The file given does not exist")]
     FileDoesNotExist(#[from] io::Error),
+    #[error("An unfamiliar token was encountered when lexing!")]
+    LexemeNotRecognised,
 }
 
 type DataType = i64;

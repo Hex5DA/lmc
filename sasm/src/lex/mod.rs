@@ -32,7 +32,7 @@ impl LexingBuffer {
             .chars()
             .collect::<Vec<char>>()
             .first()
-            .unwrap()
+            .unwrap_or(&' ')
             .clone()
     }
 
@@ -72,6 +72,8 @@ pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
         clean_newline(&mut lb);
         clean_whitespace(&mut lb);
         clean_eof(&mut lb);
+        clean_comments(&mut lb);
+        // return Err(SasmErrors::LexemeNotRecognised);
     }
 
     Ok(lb.tokens_mut().to_owned())

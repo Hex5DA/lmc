@@ -55,7 +55,7 @@ pub fn lex_label(lb: &mut LexingBuffer) -> bool {
 pub fn clean_whitespace(lb: &mut LexingBuffer) -> bool {
     for (idx, ch) in lb.contents().chars().enumerate() {
         if !ch.is_whitespace() {
-            let _ = lb.trim(idx);
+            lb.trim(idx);
             return true;
         }
     }
@@ -77,5 +77,20 @@ pub fn clean_eof(lb: &mut LexingBuffer) -> bool {
         lb.clear();
         return true;
     }
+    false
+}
+
+pub fn clean_comments(lb: &mut LexingBuffer) -> bool {
+    if lb.first() != ';' {
+        return false;
+    }
+
+    for (idx, ch) in lb.contents().chars().enumerate() {
+        if ch == '\n' {
+            lb.trim(idx);
+            return true;
+        }
+    }
+
     false
 }

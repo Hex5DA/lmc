@@ -1,10 +1,10 @@
 INP
-STA 99
+STA 99 ; get lhs
 INP
-STA 98
+STA 98 ; get rhs
 
 LDA 99
 ADD 98
-OUT
+OUT ; add & output
 
 HLT
