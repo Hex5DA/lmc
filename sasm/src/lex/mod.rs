@@ -1,14 +1,14 @@
 mod perform_lex;
 use perform_lex::*;
 
-use crate::{DataType, SasmErrors};
+use crate::{AddrType, SasmErrors};
 // Langauge syntax:
 // IDN* arg? ['idn]? ; [..]?
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Lexemes {
     OP(String),
-    ARG(DataType),
+    ARG(AddrType),
     LABEL(String),
     NEWLINE,
 }

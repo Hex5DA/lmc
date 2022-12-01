@@ -1,4 +1,5 @@
 use super::{Lexemes::*, LexingBuffer};
+use crate::AddrType;
 
 pub fn lex_idn(lb: &mut LexingBuffer) -> Option<String> {
     if !lb.first().is_ascii_alphabetic() {
@@ -31,7 +32,7 @@ pub fn lex_arg(lb: &mut LexingBuffer) -> bool {
     for (idx, ch) in lb.contents().chars().enumerate() {
         if !ch.is_ascii_digit() {
             let num = lb.trim(idx);
-            lb.tokens_mut().push(ARG(num.parse::<i64>().unwrap()));
+            lb.tokens_mut().push(ARG(num.parse::<AddrType>().unwrap()));
             return true;
         }
     }
