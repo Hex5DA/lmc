@@ -2,10 +2,26 @@ use std::fs::read_to_string;
 use std::io;
 use thiserror::Error;
 
+use crate::compiler::compile;
 use crate::parser::parse;
 
+mod compiler;
 mod parser;
 mod lex;
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum Instruction {
+    ADD(AddrType),
+    SUB(AddrType),
+    STA(AddrType),
+    LDA(AddrType),
+    BRA(AddrType),
+    BRZ(AddrType),
+    BRP(AddrType),
+    INP,
+    OUT,
+    HLT,
+}
 
 #[derive(Error, Debug)]
 pub enum SasmErrors {
@@ -21,20 +37,25 @@ pub enum SasmErrors {
     UnexpectedEOF,
     #[error("No argument newline or comment followed an instruction")]
     NoArgNewlineOrComment,
+    #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
+    InstructionCodeNotRecognised(i64, u64),
 }
 
-// type DataType = i64;
-type AddrType = u64;
+pub type DataType = i64;
+pub type AddrType = u16;
 
-pub fn run(path: &str) -> Result<(), SasmErrors> {
+pub fn process(path: &str) -> Result<Vec<DataType>, SasmErrors> {
     let mut contents = read_to_string(path)?;
     contents.push('\x04'); // Manually add an EOF character
-    let tokens = lex::lex(contents)?;
 
+    let tokens = lex::lex(contents)?;
     println!("Tokens: {:?}", tokens);
 
-    let instrs = parse(tokens);
+    let instrs = parse(tokens)?;
     println!("Instructions: {:?}", instrs);
 
-    Ok(())
+    let compiled = compile(instrs)?;
+    println!("Compiled: {:?}", compiled);
+
+    Ok(compiled)
 }

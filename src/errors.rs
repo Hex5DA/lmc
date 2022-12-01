@@ -14,6 +14,4 @@ pub enum LMCErrors {
     IOError(#[from] std::io::Error),
     #[error("Tried to access memory out of bounds.")]
     MemoryOutOfBounds,
-    #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
-    InstructionCodeNotRecognised(i64, u64),
 }

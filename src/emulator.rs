@@ -1,71 +1,9 @@
 use crate::errors::*;
 
+use sasm::{Instruction, DataType, AddrType};
 use std::io::{stdin, stdout, Write};
 
 const MEMORY_LIMIT: usize = 100;
-type DataType = i64;
-type AddrType = u16;
-
-#[derive(PartialEq, Eq)]
-pub enum Instruction {
-    ADD(AddrType),
-    SUB(AddrType),
-    STA(AddrType),
-    LDA(AddrType),
-    BRA(AddrType),
-    BRZ(AddrType),
-    BRP(AddrType),
-    INP,
-    OUT,
-    HLT,
-}
-
-impl Into<DataType> for Instruction {
-    fn into(self) -> DataType {
-        match self {
-            Instruction::ADD(addr) => (1 * 100 + addr).into(),
-            Instruction::SUB(addr) => (2 * 100 + addr).into(),
-            Instruction::STA(addr) => (3 * 100 + addr).into(),
-            Instruction::LDA(addr) => (5 * 100 + addr).into(),
-            Instruction::BRA(addr) => (6 * 100 + addr).into(),
-            Instruction::BRZ(addr) => (7 * 100 + addr).into(),
-            Instruction::BRP(addr) => (8 * 100 + addr).into(),
-            Instruction::INP => (9 * 100 + 1).into(),
-            Instruction::OUT => (9 * 100 + 2).into(),
-            Instruction::HLT => (0 * 100 + 0).into(),
-        }
-    }
-}
-
-impl From<DataType> for Instruction {
-    fn from(code: DataType) -> Instruction {
-        let op = ((code / 100) as f64).floor() as DataType;
-        let payload = code % 100;
-
-        match op {
-            0 => Instruction::HLT,
-            1 => Instruction::ADD(payload as AddrType),
-            2 => Instruction::SUB(payload as AddrType),
-            3 => Instruction::STA(payload as AddrType),
-            5 => Instruction::LDA(payload as AddrType),
-            6 => Instruction::BRA(payload as AddrType),
-            7 => Instruction::BRZ(payload as AddrType),
-            8 => Instruction::BRP(payload as AddrType),
-            9 => match payload {
-                1 => Instruction::INP,
-                2 => Instruction::OUT,
-                _ => panic!(
-                    "{}",
-                    LMCErrors::InstructionCodeNotRecognised(payload as i64, 2)
-                ),
-            },
-            _ => panic!(
-                "{}",
-                LMCErrors::InstructionCodeNotRecognised(op as i64, 9)
-            ),
-        }
-    }
-}
 
 struct Memory([DataType; MEMORY_LIMIT]);
 impl Memory {
@@ -138,9 +76,8 @@ impl LMC {
         Ok(())
     }
 
-    pub fn load(&mut self, program: Vec<Instruction>) -> Result<(), LMCErrors> {
+    pub fn load(&mut self, program: Vec<DataType>) -> Result<(), LMCErrors> {
         if program.is_empty() {
-            // If program.len() is less than 0 I'm deeply concerned but may as well :)
             return Err(LMCErrors::NoInstructionsGiven);
         }
 
@@ -149,7 +86,7 @@ impl LMC {
         }
 
         for (idx, instr) in program.into_iter().enumerate() {
-            self.memory.set(idx as u16, instr.into())?;
+            self.memory.set(idx as AddrType, instr.into())?;
         }
 
         Ok(())
@@ -157,7 +94,7 @@ impl LMC {
 
     pub fn run(&mut self) -> Result<(), LMCErrors> {
         loop {
-            let data = self.memory.get(self.pc as u16)?; // Fetch
+            let data = self.memory.get(self.pc as AddrType)?; // Fetch
             let instr: Instruction = (*data).into(); // Decode
             self.pc += 1;
 

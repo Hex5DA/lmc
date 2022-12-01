@@ -1,31 +1,16 @@
 pub mod emulator;
 pub mod errors;
 
-use emulator::{LMC, Instruction};
+use emulator::LMC;
 use sasm;
 
 fn main() {
-    use Instruction::*;
-    
-    println!("Loading sasm");
-    if let Err(err) = sasm::run("./test.sasm") {
-        println!("Error while running sasm {}", err);
-    }
-
-    let prog = vec![
-        INP,
-        STA(99),
-        INP,
-        STA(98),
-        LDA(99),
-        ADD(98),
-        OUT
-    ];
-
     let mut lmc = LMC::new();
     
+    let compiled = sasm::process("./test.sasm").expect("Expand on this error handling!");
+
     println!("Loading the program into memory..");
-    if let Err(err) = lmc.load(prog) {
+    if let Err(err) = lmc.load(compiled) {
         println!("An error occured whilst loading the program: {}", err);
     }    
 

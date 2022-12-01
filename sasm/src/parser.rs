@@ -1,19 +1,5 @@
-use crate::{AddrType, SasmErrors};
+use crate::{AddrType, SasmErrors, Instruction};
 use crate::lex::Lexemes;
-
-#[derive(PartialEq, Eq, Debug)]
-pub enum Instruction {
-    ADD(AddrType),
-    SUB(AddrType),
-    STA(AddrType),
-    LDA(AddrType),
-    BRA(AddrType),
-    BRZ(AddrType),
-    BRP(AddrType),
-    INP,
-    OUT,
-    HLT,
-}
 
 impl Instruction {
     fn from_op_lexeme(op: String, arg: Option<AddrType>) -> Result<Self, SasmErrors> {
@@ -54,7 +40,7 @@ pub fn parse(lexemes: Vec<Lexemes>) -> Result<Vec<Instruction>, SasmErrors> {
         };
 
         if let Some(instr) = instr {
-            instrs.push(instr.unwrap());
+            instrs.push(instr);
         }
     }
 
