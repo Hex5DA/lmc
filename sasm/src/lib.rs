@@ -49,13 +49,8 @@ pub fn process(path: &str) -> Result<Vec<DataType>, SasmErrors> {
     contents.push('\x04'); // Manually add an EOF character
 
     let tokens = lex::lex(contents)?;
-    println!("Tokens: {:?}", tokens);
-
     let instrs = parse(tokens)?;
-    println!("Instructions: {:?}", instrs);
-
     let compiled = compile(instrs)?;
-    println!("Compiled: {:?}", compiled);
 
     Ok(compiled)
 }
