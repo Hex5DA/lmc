@@ -1,17 +1,43 @@
 # Little Man Computer Emulator
 
-I'm bored so I wrote a LMC emulator. Based off of this spec:
-<https://en.wikipedia.org/wiki/Little_man_computer>
+An LMC emulator which can be programmed with a basic assembly-like language, coded in rust.
 
-This also includes a ""programming language"" (exaggeration) which ""compiles"" (exaggeration) to run on the virtual ""cpu"" (exaggeration)
+## Sasm
 
-Still neat though.
+| Instruction | Code | Function |
+| --- | --- | --- |
+| `ADD` | 1*xx* | Add the value in the given address (*xx*) to the value in the accumulator |
+| `SUB` | 2*xx* | Subtract the value at the given address (*xx*) from the value in the accumulator |
+| `STA` | 3*xx* | Store the contents in the accumulator at the given address (*xx*) |
+| `LDA` | 5*xx* | Load the value at the given address (*xx*) to the accumulator |
+| `BRA` | 6*xx* | Set the program counter to the given address (*xx*), thereby jumping to that instruction |
+| `BRZ` | 7*xx* | If the accumualtor contains the value `0`, set the program counter to the given address (*xx*) |
+| `BRP` | 8*xx* | If the accumualtor contains a positive value, set the program counter to the given address (*xx*) |
+| `INP` | 901 | Get an input value from the user and store it in the accumulator |
+| `OUT` | 902 | Print out the value currently stored in the accumulator |
 
-Will refactor & document later on :)
+Comments begin after a `;` and are ignored.
 
-It isn't fully true to the ""standard"" (ex. data is stored as u64 not 0-999)
+A simple program to add 2 numbers:
 
-But it was fun to make ^^
+```sasm
+INP
+STA 99 ; Store input in reg. 99 (lhs)
+INP
+STA 98 ; Store input in reg. 98 (rhs)
+
+LDA 99 ; Load reg. 99 (rhs)
+ADD 98 ; Add reg. 98 (lhs) to accumulator (rhs)
+OUT ; Output accumulator (result)
+
+HLT ; Exit
+```
+
+## Todo
+
+- Labels (they are lexed correctly but not currently parsed)
+- Data instruction
+- Better error handling (parsing & lexing)
 
 ## License
 

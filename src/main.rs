@@ -7,7 +7,7 @@ use emulator::LMC;
 
 fn main() {
     // Too small a use-case to really use clap so this is fine
-    if args().len() < 1 {
+    if args().len() < 2 {
         eprintln!("Please pass in the path to the sasm program!");
         exit(1);
     }
