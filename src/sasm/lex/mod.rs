@@ -1,9 +1,10 @@
 mod perform_lex;
 use perform_lex::*;
 
-use crate::{AddrType, SasmErrors};
+use super::{AddrType, SasmErrors};
+
 // Langauge syntax:
-// IDN* arg? ['idn]? ; [..]?
+// IDN arg? ['idn]? [; | [; *]]?
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Lexemes {

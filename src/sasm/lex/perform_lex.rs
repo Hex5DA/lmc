@@ -1,5 +1,5 @@
 use super::{Lexemes::*, LexingBuffer};
-use crate::AddrType;
+use super::AddrType;
 
 pub fn lex_idn(lb: &mut LexingBuffer) -> Option<String> {
     if !lb.first().is_ascii_alphabetic() {
@@ -54,11 +54,9 @@ pub fn lex_label(lb: &mut LexingBuffer) -> bool {
 }
 
 pub fn clean_whitespace(lb: &mut LexingBuffer) -> bool {
-    for (idx, ch) in lb.contents().chars().enumerate() {
-        if !ch.is_whitespace() {
-            lb.trim(idx);
-            return true;
-        }
+    if lb.first().is_whitespace() {
+        lb.trim(1);
+        return true;
     }
 
     false
@@ -67,7 +65,8 @@ pub fn clean_whitespace(lb: &mut LexingBuffer) -> bool {
 pub fn clean_newline(lb: &mut LexingBuffer) -> bool {
     if lb.first() == '\n' {
         lb.trim(1);
-        lb.tokens_mut().push(NEWLINE)
+        lb.tokens_mut().push(NEWLINE);
+        return true;
     }
 
     false

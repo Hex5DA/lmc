@@ -1,4 +1,4 @@
-use crate::{Instruction, DataType, AddrType, SasmErrors};
+use super::{Instruction, DataType, AddrType, SasmErrors};
 
 // turn Instruction into DataType for compilation
 // turn DataType into Instruction for execution

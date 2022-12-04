@@ -1,5 +1,6 @@
-use crate::{AddrType, SasmErrors, Instruction};
-use crate::lex::Lexemes;
+use super::{AddrType, Instruction};
+use crate::errors::SasmErrors;
+use super::lex::Lexemes;
 
 impl Instruction {
     fn from_op_lexeme(op: String, arg: Option<AddrType>) -> Result<Self, SasmErrors> {
@@ -13,10 +14,21 @@ impl Instruction {
             "bra" => BRA(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brz" => BRZ(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brp" => BRP(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
-            "inp" => INP,
-            "out" => OUT,
-            "hlt" => HLT,
-            _ => return Err(SasmErrors::InstructionNotRecognised),
+            op => { // God this is disgusting
+                if matches!(op, "inp" | "out" | "hlt") {
+                    if !arg.is_none() {
+                        return Err(SasmErrors::UnexpectedArgPassedToOp);
+                    }
+                    match op {
+                        "inp" => INP,
+                        "out" => OUT,
+                        "hlt" => HLT,
+                        _ => unreachable!()
+                    }
+                } else {
+                    return Err(SasmErrors::InstructionNotRecognised)
+                }
+            }
         })
     }
 }

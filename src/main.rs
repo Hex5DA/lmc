@@ -1,8 +1,8 @@
 pub mod emulator;
 pub mod errors;
+pub mod sasm;
 
 use emulator::LMC;
-use sasm;
 
 fn main() {
     let mut lmc = LMC::new();

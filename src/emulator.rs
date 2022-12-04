@@ -1,7 +1,23 @@
 use crate::errors::*;
 
-use sasm::{Instruction, DataType, AddrType};
 use std::io::{stdin, stdout, Write};
+
+pub type DataType = i64;
+pub type AddrType = u16;
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum Instruction {
+    ADD(AddrType),
+    SUB(AddrType),
+    STA(AddrType),
+    LDA(AddrType),
+    BRA(AddrType),
+    BRZ(AddrType),
+    BRP(AddrType),
+    INP,
+    OUT,
+    HLT,
+}
 
 const MEMORY_LIMIT: usize = 100;
 
