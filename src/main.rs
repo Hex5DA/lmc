@@ -2,13 +2,20 @@ mod emulator;
 mod errors;
 mod sasm;
 
-use std::process::exit;
+use std::{process::exit, env::args};
 use emulator::LMC;
 
 fn main() {
+    // Too small a use-case to really use clap so this is fine
+    if args().len() < 1 {
+        eprintln!("Please pass in the path to the sasm program!");
+        exit(1);
+    }
+
+    let path = args().collect::<Vec<String>>()[1].clone();
     let mut lmc = LMC::new();
     
-    let compiled = sasm::process("./test.sasm").unwrap_or_else(|err| {
+    let compiled = sasm::process(path).unwrap_or_else(|err| {
         eprintln!("Error while processsing sasm file: {}", err);
         exit(1);
     });

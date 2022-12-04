@@ -11,7 +11,7 @@ use compiler::compile;
 use parser::parse;
 use lex::lex;
 
-pub fn process(path: &str) -> Result<Vec<DataType>, SasmErrors> {
+pub fn process(path: String) -> Result<Vec<DataType>, SasmErrors> {
     let mut contents = read_to_string(path)?;
     contents.push('\x04'); // Manually add an EOF character
 
