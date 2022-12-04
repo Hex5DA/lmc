@@ -59,6 +59,11 @@ pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
     let mut lb = LexingBuffer::new(contents);
 
     while !lb.is_empty() {
+        clean_newline(&mut lb);
+        clean_whitespace(&mut lb);
+        clean_eof(&mut lb);
+        clean_comments(&mut lb);
+
         if lex_op(&mut lb) {
             continue;
         }
@@ -68,12 +73,6 @@ pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
         if lex_label(&mut lb) {
             continue;
         }
-
-        clean_newline(&mut lb);
-        clean_whitespace(&mut lb);
-        clean_eof(&mut lb);
-        clean_comments(&mut lb);
-        // return Err(SasmErrors::LexemeNotRecognised);
     }
 
     Ok(lb.tokens_mut().to_owned())
