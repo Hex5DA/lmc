@@ -31,7 +31,7 @@ pub enum SasmErrors {
     UnexpectedArgPassedToOp,
     #[error("Encountered an end of file while parsing")]
     UnexpectedEOF,
-    #[error("No argument newline or comment followed an instruction")]
+    #[error("No argument, newline, or comment followed an instruction")]
     NoArgNewlineOrComment,
     #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
     InstructionCodeNotRecognised(i64, u64),

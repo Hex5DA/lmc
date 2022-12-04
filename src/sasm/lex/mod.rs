@@ -14,22 +14,25 @@ pub enum Lexemes {
     NEWLINE,
 }
 
-pub struct LexingBuffer(String, Vec<Lexemes>, u64);
+pub struct LexingBuffer {
+    pub contents: String,
+    tokens: Vec<Lexemes>,
+}
+
 impl LexingBuffer {
-    fn new(str: String) -> Self {
+    fn new(contents: String) -> Self {
         Self {
-            0: str,
-            1: Vec::new(),
-            2: 0,
+            contents,
+            tokens: Vec::new(),
         }
     }
 
     fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.contents.is_empty()
     }
 
     fn first(&self) -> char {
-        self.0
+        self.contents
             .chars()
             .collect::<Vec<char>>()
             .first()
@@ -38,28 +41,36 @@ impl LexingBuffer {
     }
 
     fn tokens_mut(&mut self) -> &mut Vec<Lexemes> {
-        &mut self.1
-    }
-
-    fn contents(&self) -> &String {
-        &self.0
+        &mut self.tokens
     }
 
     fn trim(&mut self, idx: usize) -> String {
-        let retval = self.0[..idx].to_string();
-        self.0 = self.0[idx..].to_string();
+        let retval = self.contents[..idx].to_string();
+        self.contents = self.contents[idx..].to_string();
         retval
     }
 
     fn clear(&mut self) {
-        self.0.clear();
+        self.contents.clear();
     }
 }
 
 pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
     let mut lb = LexingBuffer::new(contents);
+    let mut count = 0;
+    let mut last_len = 0;
 
     while !lb.is_empty() {
+        count += 1;
+        if lb.tokens.len() != last_len {
+            last_len = lb.tokens.len();
+            count = 0;
+        }
+
+        if count >= 100 { // If 100 cycles have gone by without any token being lexed return error
+            return Err(SasmErrors::LexemeNotRecognised);
+        }
+
         clean_newline(&mut lb);
         clean_whitespace(&mut lb);
         clean_eof(&mut lb);

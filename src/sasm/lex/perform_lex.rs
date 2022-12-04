@@ -6,7 +6,7 @@ pub fn lex_idn(lb: &mut LexingBuffer) -> Option<String> {
         return None;
     }
 
-    for (idx, ch) in lb.contents().chars().enumerate() {
+    for (idx, ch) in lb.contents.chars().enumerate() {
         if !ch.is_ascii_alphabetic() {
             return Some(lb.trim(idx));
         }
@@ -29,7 +29,7 @@ pub fn lex_arg(lb: &mut LexingBuffer) -> bool {
         return false;
     }
 
-    for (idx, ch) in lb.contents().chars().enumerate() {
+    for (idx, ch) in lb.contents.chars().enumerate() {
         if !ch.is_ascii_digit() {
             let num = lb.trim(idx);
             lb.tokens_mut().push(ARG(num.parse::<AddrType>().unwrap()));
@@ -73,7 +73,7 @@ pub fn clean_newline(lb: &mut LexingBuffer) -> bool {
 }
 
 pub fn clean_eof(lb: &mut LexingBuffer) -> bool {
-    if lb.contents() == "\x04" {
+    if lb.contents == "\x04" {
         lb.clear();
         return true;
     }
@@ -85,7 +85,7 @@ pub fn clean_comments(lb: &mut LexingBuffer) -> bool {
         return false;
     }
 
-    for (idx, ch) in lb.contents().chars().enumerate() {
+    for (idx, ch) in lb.contents.chars().enumerate() {
         if ch == '\n' {
             lb.trim(idx);
             return true;
