@@ -18,6 +18,32 @@ An LMC emulator which can be programmed with a basic assembly-like language, cod
 
 Comments begin after a `;` and are ignored.
 
+Labels are defined with `,` and can be referenced with `'`
+
+They are a WIP, and cannot be used with instructions like `DAT`, but its a start.
+
+Example use:
+
+A simple program that counts down from a given number by using a given step value
+
+(Obviosuly this isnt practical because entering, ex. 5 & 2 would lead to an infinite (?) loop, but its a demonstration its fine)
+
+```sasm
+INP
+STA 99 ; get count
+INP
+STA 98 ; get dec
+
+LDA 99 ,loop ; Load count and set the loop label
+SUB 98       ; Subtract step
+OUT
+BRZ 'end ; If result == 0, jump to end label
+STA 99   ; Update count
+BRA 'loop ; Jump to loop label
+
+HLT ,end ; Declare end label
+```
+
 A simple program to add 2 numbers:
 
 ```sasm
@@ -35,7 +61,6 @@ HLT ; Exit
 
 ## Todo
 
-- Labels (they are lexed correctly but not currently parsed)
 - Data instruction
 - Better error handling (parsing & lexing)
 

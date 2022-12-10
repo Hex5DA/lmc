@@ -8,10 +8,11 @@ use super::{AddrType, SasmErrors};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Lexemes {
-    OP(String),
-    ARG(AddrType),
-    LABEL(String),
-    NEWLINE,
+    Op(String),
+    Arg(AddrType),
+    Label(String),
+    DecLabel(String),
+    Newline,
 }
 
 pub struct LexingBuffer {
@@ -83,6 +84,9 @@ pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
             continue;
         }
         if lex_label(&mut lb) {
+            continue;
+        }
+        if lex_dec_label(&mut lb) {
             continue;
         }
     }

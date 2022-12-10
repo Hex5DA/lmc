@@ -86,7 +86,7 @@ impl LMC {
                 stdin().read_line(&mut buf)?;
                 let as_int: DataType = buf.trim().parse()?;
                 self.accumulator = as_int;
-            }
+            },
         }
 
         Ok(())

@@ -23,8 +23,8 @@ pub enum SasmErrors {
     FileDoesNotExist(#[from] io::Error),
     #[error("An unfamiliar token was encountered when lexing!")]
     LexemeNotRecognised,
-    #[error("The instruction lexed was not recognised")]
-    InstructionNotRecognised,
+    #[error("The instruction lexed was not recognised: found unknown token '{0}'")]
+    InstructionNotRecognised(String),
     #[error("No argument was passed to an instruction")]
     NoArgumentPassedToOp,
     #[error("An argument was passed to an instruction that did not require one")]
@@ -35,4 +35,6 @@ pub enum SasmErrors {
     NoArgNewlineOrComment,
     #[error("The instruction code read was not recognised; got {0}, limit is {1}")]
     InstructionCodeNotRecognised(i64, u64),
+    #[error("The label used ({0}) was not defined")]
+    UseOfUndeclaredLabel(String),
 }

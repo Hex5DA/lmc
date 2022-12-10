@@ -1,6 +1,6 @@
+use super::lex::Lexemes;
 use super::{AddrType, Instruction};
 use crate::errors::SasmErrors;
-use super::lex::Lexemes;
 
 impl Instruction {
     fn from_op_lexeme(op: String, arg: Option<AddrType>) -> Result<Self, SasmErrors> {
@@ -14,7 +14,8 @@ impl Instruction {
             "bra" => BRA(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brz" => BRZ(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brp" => BRP(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
-            op => { // God this is disgusting
+            op => {
+                // God this is disgusting
                 if matches!(op, "inp" | "out" | "hlt") {
                     if !arg.is_none() {
                         return Err(SasmErrors::UnexpectedArgPassedToOp);
@@ -23,10 +24,10 @@ impl Instruction {
                         "inp" => INP,
                         "out" => OUT,
                         "hlt" => HLT,
-                        _ => unreachable!()
+                        _ => unreachable!(),
                     }
                 } else {
-                    return Err(SasmErrors::InstructionNotRecognised)
+                    return Err(SasmErrors::InstructionNotRecognised(op.to_string()));
                 }
             }
         })
@@ -35,20 +36,29 @@ impl Instruction {
 
 pub fn parse(lexemes: Vec<Lexemes>) -> Result<Vec<Instruction>, SasmErrors> {
     let mut instrs: Vec<Instruction> = Vec::new();
+
     for (idx, lexeme) in lexemes.iter().enumerate() {
         let instr = match lexeme.to_owned() {
-            Lexemes::OP(name) => {
-                let next = lexemes.get(idx + 1).ok_or(SasmErrors::UnexpectedEOF)?.to_owned();
-                
+            // TODO: Remove args when encountered whilst parsing OPs and change ARG -> unreachable!()
+            Lexemes::Op(name) => {
+                let next = lexemes
+                    .get(idx + 1)
+                    .ok_or(SasmErrors::UnexpectedEOF)?
+                    .to_owned();
+
                 Some(match next {
-                    Lexemes::ARG(val) => Instruction::from_op_lexeme(name, Some(val))?,
-                    Lexemes::NEWLINE => Instruction::from_op_lexeme(name, None)?,
+                    Lexemes::Arg(val) => Instruction::from_op_lexeme(name, Some(val))?,
+                    Lexemes::Newline => Instruction::from_op_lexeme(name, None)?,
+                    Lexemes::Label(label) => {
+                        println!("Label '{label}' enocuntered");
+                        Instruction::from_op_lexeme(name, Some(99))?
+                    },
                     _ => return Err(SasmErrors::NoArgNewlineOrComment),
                 })
-            }
-            Lexemes::NEWLINE => None,
-            Lexemes::ARG(_) => None,
-            Lexemes::LABEL(_name) => todo!()
+            },
+            Lexemes::Arg(_) => None,
+            Lexemes::Newline => None,
+            Lexemes::Label(_) | Lexemes::DecLabel(_) => unreachable!(),
         };
 
         if let Some(instr) = instr {
