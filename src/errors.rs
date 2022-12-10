@@ -17,12 +17,14 @@ pub enum LMCErrors {
     MemoryOutOfBounds,
 }
 
+pub const TEXT_PREVIEW_LENGTH: usize = 10;
+
 #[derive(Error, Debug)]
 pub enum SasmErrors {
     #[error("The file given does not exist")]
     FileDoesNotExist(#[from] io::Error),
-    #[error("An unfamiliar token was encountered when lexing!")]
-    LexemeNotRecognised,
+    #[error("An unfamiliar token was encountered when lexing! Next characters: '{0}' ({1} more)")]
+    LexemeNotRecognised(String, u64),
     #[error("The instruction lexed was not recognised: found unknown token '{0}'")]
     InstructionNotRecognised(String),
     #[error("No argument was passed to an instruction")]

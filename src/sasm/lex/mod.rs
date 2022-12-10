@@ -1,6 +1,7 @@
 mod perform_lex;
 use perform_lex::*;
 
+use crate::errors::TEXT_PREVIEW_LENGTH;
 use super::{AddrType, SasmErrors};
 
 // Langauge syntax:
@@ -69,7 +70,8 @@ pub fn lex(contents: String) -> Result<Vec<Lexemes>, SasmErrors> {
         }
 
         if count >= 100 { // If 100 cycles have gone by without any token being lexed return error
-            return Err(SasmErrors::LexemeNotRecognised);
+            let next = lb.contents[..TEXT_PREVIEW_LENGTH].to_string().clone();
+            return Err(SasmErrors::LexemeNotRecognised(next, (lb.contents.len() - TEXT_PREVIEW_LENGTH) as u64));
         }
 
         clean_newline(&mut lb);
