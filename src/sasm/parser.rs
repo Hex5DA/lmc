@@ -14,22 +14,18 @@ impl Instruction {
             "bra" => BRA(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brz" => BRZ(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
             "brp" => BRP(arg.ok_or(SasmErrors::NoArgumentPassedToOp)?),
-            op => {
-                // God this is disgusting
-                if matches!(op, "inp" | "out" | "hlt") {
-                    if !arg.is_none() {
-                        return Err(SasmErrors::UnexpectedArgPassedToOp);
-                    }
-                    match op {
-                        "inp" => INP,
-                        "out" => OUT,
-                        "hlt" => HLT,
-                        _ => unreachable!(),
-                    }
-                } else {
-                    return Err(SasmErrors::InstructionNotRecognised(op.to_string()));
+            op @ ("inp" | "out" | "hlt") => {
+                if !arg.is_none() {
+                    return Err(SasmErrors::UnexpectedArgPassedToOp);
                 }
-            }
+                match op {
+                    "inp" => INP,
+                    "out" => OUT,
+                    "hlt" => HLT,
+                    _ => unreachable!(),
+                }
+            },
+            unknown => return Err(SasmErrors::InstructionNotRecognised(unknown.to_string())),
         })
     }
 }
